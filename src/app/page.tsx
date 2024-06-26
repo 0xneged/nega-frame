@@ -8,7 +8,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL ? new URL(SITE_URL) : undefined,
-  title: 'Pill Claim Frame',
+  title: 'Neged Claim Frame',
   other: FRAME_METADATA,
   openGraph: {
        type: "website",
