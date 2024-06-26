@@ -104,7 +104,7 @@ function getResponse(type: ResponseType) {
         ? `<meta property="fc:frame:button:1" content="Try again" />
 				    <meta name="fc:frame:button:2" content="Follow Neged" />
         		<meta name="fc:frame:button:2:action" content="link" />
-        		<meta name="fc:frame:button:2:target" content="https://warpcast.com/~/channel/neged" />
+        		<meta name="fc:frame:button:2:target" content="https://warpcast.com/neged" />
 				`
 			: 
       `
