@@ -1,4 +1,4 @@
-import { addUser, checkClaimed, shareOnWarpCast } from '@/app/backend'
+import { addUser, shareOnWarpCast } from '@/app/backend'
 import { getImage } from '@/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { Address } from 'viem'
@@ -44,9 +44,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       status?.action?.interactor?.verifications?.[0]
 
     if (!userAddress) return getResponse(ResponseType.NO_ADDRESS)
-
-    const hasClaimed = await checkClaimed(userAddress)
-    if (hasClaimed) return getResponse(ResponseType.ALREADY_MINTED)
 
     await addUser(userAddress)
     return getResponse(ResponseType.SUCCESS)

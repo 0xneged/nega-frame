@@ -3,17 +3,6 @@ import env from '@/env'
 
 const { BACKEND_URL } = env
 
-export async function checkClaimed(address: string) {
-  try {
-    const data = await axios.get<boolean>(
-      BACKEND_URL + '/frame' + '?address=' + address
-    )
-    return data
-  } catch (e) {
-    console.error('Error fetching data:', e)
-  }
-}
-
 export async function addUser(address: string) {
   try {
     await axios.post(BACKEND_URL + '/frame', { address })
