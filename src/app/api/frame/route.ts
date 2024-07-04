@@ -75,8 +75,8 @@ function getResponse(type: ResponseType) {
         <meta name="fc:frame:button:1:action" content="link" />
         <meta name="fc:frame:button:1:target" content="${shareOnWarpCast()}" />
         <meta name="fc:frame:button:2" content="Play 🎲" />
-        <meta name="fc:frame:button:1:action" content="link" />
-        <meta name="fc:frame:button:1:target" content="https://neged-hat.app" />
+        <meta name="fc:frame:button:2:action" content="link" />
+        <meta name="fc:frame:button:2:target" content="https://neged-hat.app" />
         `
         : shouldRetry
           ? `<meta property="fc:frame:button:1" content="Try again" />
