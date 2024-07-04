@@ -45,7 +45,9 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     if (!userAddress) return getResponse(ResponseType.NO_ADDRESS)
 
-    await addUser(userAddress)
+    const success = await addUser(userAddress)
+    if (!success) return getResponse(ResponseType.ERROR)
+
     return getResponse(ResponseType.SUCCESS)
   } catch (e) {
     console.error(e)

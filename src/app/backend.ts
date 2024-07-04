@@ -5,7 +5,11 @@ const { BACKEND_URL } = env
 
 export async function addUser(address: string) {
   try {
-    await axios.post(BACKEND_URL + '/frame', { address })
+    const { data } = await axios.post<{ success: boolean }>(
+      BACKEND_URL + '/frame',
+      { address }
+    )
+    return data.success
   } catch (e) {
     console.error(e)
   }
