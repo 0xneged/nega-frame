@@ -1,7 +1,8 @@
 {
-  "name": "test-mint",
-  "version": "0.0.0",
+  "name": "neged-hat-claim",
+  "version": "0.0.1",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,9 +17,7 @@
     "@types/react-dom": "^18.2.18",
     "@vercel/kv": "^1.0.1",
     "@vercel/og": "^0.6.2",
-    "@vercel/postgres": "^0.8.0",
-    "@vercel/postgres-kysely": "^0.8.0",
-    "kysely": "^0.27.3",
+    "axios": "^1.7.2",
     "next": "^14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -26,9 +25,9 @@
     "viem": "^2.9.31"
   },
   "devDependencies": {
+    "envalid": "^8.0.0",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
-    "prettier": "^3.1.1",
-    "sharp": "0.33.1"
+    "prettier": "^3.1.1"
   }
 }

@@ -1,20 +1,30 @@
-import { base } from 'viem/chains';
-import { FrameImageMetadata, getFrameMetadata } from '@coinbase/onchainkit/frame';
+import {
+  FrameImageMetadata,
+  getFrameMetadata,
+} from '@coinbase/onchainkit/frame'
+import env from '@/env'
+import ResponseType from '@/types/ResponseType'
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const picFolderUrl = env.SITE_URL
 
-export const CHAIN = base;
-export const CONTRACT_ADDRESS = '0x4229c271c19ca5f319fb67b4bc8a40761a6d6299';
+export const getImage = (imageType: ResponseType) => {
+  return {
+    [ResponseType.SUCCESS]: picFolderUrl + '/claimed.jpg',
+    [ResponseType.ALREADY_MINTED]: picFolderUrl + '/claimed.jpg',
+    [ResponseType.RECAST]: picFolderUrl + '/recast.jpg',
+    [ResponseType.NO_ADDRESS]: picFolderUrl + '/no-address.png',
+    [ResponseType.ERROR]: picFolderUrl + '/error.png',
+    [ResponseType.GENERAL]: picFolderUrl + '/general.jpg',
+  }[imageType]
+}
 
 const imageData: FrameImageMetadata = {
-	src: `https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/general.jpg`,
-	aspectRatio: '1:1' // или '1.91:1'
-};
+  src: getImage(ResponseType.GENERAL),
+  aspectRatio: '1:1',
+}
 
 export const FRAME_METADATA = getFrameMetadata({
-  buttons: [{
-		label: 'Eligibility Checker',
-	},],
+  buttons: [{ label: 'Claim your HATs' }],
   image: imageData,
-  post_url: `${SITE_URL}/api/frame`,
-});
+  postUrl: `${env.SITE_URL}/api/frame`,
+})

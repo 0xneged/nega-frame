@@ -1,33 +1,28 @@
-import {
-  CHAIN,
-  CONTRACT_ADDRESS,
-  FRAME_METADATA,
-  SITE_URL,
-} from '@/config';
-import { Metadata } from 'next';
+import { FRAME_METADATA, getImage } from '@/config'
+import env from '@/env'
+import ResponseType from '@/types/ResponseType'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  metadataBase: SITE_URL ? new URL(SITE_URL) : undefined,
-  title: 'Neged Claim Frame',
+  metadataBase: new URL(env.SITE_URL),
+  title: 'negeD Claim Frame',
   other: FRAME_METADATA,
   openGraph: {
-       type: "website",
-       title: "Neged Claim Frame",
-       images: [{
-         url: "https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/general.jpg",
-       }],
-     }
-};
+    type: 'website',
+    title: 'negeD Claim Frame',
+    images: [{ url: getImage(ResponseType.GENERAL) }],
+  },
+}
 
 export default function Home() {
   return (
     <div style={{ minHeight: '100dvh', display: 'flex' }}>
-        <a
-          href={`https://warpcast.com/~/channel/neged`}
-          style={{ color: 'inherit' }}
-        >
-          Claim your airdrop
-        </a>
+      <a
+        href={`https://warpcast.com/~/channel/neged`}
+        style={{ color: 'inherit' }}
+      >
+        Claim your HATs
+      </a>
     </div>
-  );
+  )
 }

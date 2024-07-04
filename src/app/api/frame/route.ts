@@ -1,159 +1,135 @@
-import { SITE_URL } from '@/config';
-import { NextRequest, NextResponse } from 'next/server';
-import { getUser, addUser } from './types';
-import { Address } from 'viem';
+import { addUser, checkClaimed, shareOnWarpCast } from '@/app/backend'
+import { getImage } from '@/config'
+import { NextRequest, NextResponse } from 'next/server'
+import { Address } from 'viem'
+import ResponseType from '@/types/ResponseType'
+import env from '@/env'
 
-const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
+export const dynamic = 'force-dynamic'
 
-export const dynamic = 'force-dynamic';
+type RequestBody = { trustedData?: { messageBytes?: string } }
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
-    const body: { trustedData?: { messageBytes?: string } } = await req.json();
+    const body: RequestBody = await req.json()
 
-    // Check if frame request is valid
-    const status = await validateFrameRequest(body.trustedData?.messageBytes);
+    const status = await validateFrameRequest(body.trustedData?.messageBytes)
 
     if (!status?.valid) {
-      console.error(status);
-      throw new Error('Invalid frame request');
+      console.error(status)
+      return getResponse(ResponseType.NO_ADDRESS)
     }
 
-    const fid_new = status?.action?.interactor?.fid ? JSON.stringify(status.action.interactor.fid) : null;
+    const userFid = status?.action?.interactor?.fid
+      ? JSON.stringify(status.action.interactor.fid)
+      : null
 
-    // Check if user has liked and recasted
-    const hasLikedAndRecasted =
-      !!status?.action?.cast?.viewer_context?.liked &&
-      !!status?.action?.cast?.viewer_context?.recasted;
+    const context = status?.action?.cast?.viewer_context
+    const hasLikedAndRecasted = !!context?.liked && !!context?.recasted
 
-    if (!hasLikedAndRecasted) {
-      return getResponse(ResponseType.RECAST);
-    }
+    if (!hasLikedAndRecasted) return getResponse(ResponseType.RECAST)
 
-    // Check if user has liked and recasted
-    const userFollow = await userInfo(Number(fid_new));
-    let subs;
+    const userFollow = await userInfo(Number(userFid))
 
     if (!userFollow?.users) {
-      console.error('not follow');
-      throw new Error('Invalid frame request');
+      console.error('not follow')
+      return getResponse(ResponseType.ERROR)
     } else {
-      subs = userFollow?.users[0].viewer_context?.following;
-      console.warn('followed');
-      if (!subs) {
-        return getResponse(ResponseType.RECAST);
-      }
+      const subs = userFollow?.users[0].viewer_context?.following
+      console.warn(userFid, 'already followed')
+      if (!subs) return getResponse(ResponseType.RECAST)
     }
 
-    const address1: Address | undefined =
-        status?.action?.interactor?.verifications?.[0];
+    const userAddress: Address | undefined =
+      status?.action?.interactor?.verifications?.[0]
 
-    if (!address1) {
-      return getResponse(ResponseType.NO_ADDRESS);
-    }
-    
-    let recieveDrop: boolean = false;
-		const username_new = status?.action?.interactor?.username ? JSON.stringify(status.action.interactor.username) : null;
-		const wallet = status?.action?.interactor?.verifications?.[0] ? status.action.interactor.verifications?.[0] : null;
+    if (!userAddress) return getResponse(ResponseType.NO_ADDRESS)
 
-		const User = await getUser(fid_new);
+    const hasClaimed = await checkClaimed(userAddress)
+    if (hasClaimed) return getResponse(ResponseType.ALREADY_MINTED)
 
-		if (!User) {
-			await addUser(fid_new, username_new, wallet);
-		} else {
-      recieveDrop = User.recievedrop;
-		}
-
-    if (recieveDrop) {
-        return getResponse(ResponseType.ALREADY_MINTED);
-    }
-
-    return getResponse(ResponseType.SUCCESS);
-  } catch (error) {
-    console.error(error);
-    return getResponse(ResponseType.ERROR);
+    await addUser(userAddress)
+    return getResponse(ResponseType.SUCCESS)
+  } catch (e) {
+    console.error(e)
+    return getResponse(ResponseType.ERROR)
   }
 }
 
-enum ResponseType {
-  SUCCESS,
-  RECAST,
-  ALREADY_MINTED,
-  NO_ADDRESS,
-  ERROR
-}
-
 function getResponse(type: ResponseType) {
-  const IMAGE = {
-    [ResponseType.SUCCESS]: 'https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/press.jpg',
-    [ResponseType.RECAST]: 'https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/recast.jpg',
-    [ResponseType.ALREADY_MINTED]: 'https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/claimed.jpg',
-    [ResponseType.NO_ADDRESS]: 'https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/no-address.png',
-    [ResponseType.ERROR]: 'https://gateway.lighthouse.storage/ipfs/bafybeibx2afoamzspuelag4tbczahvymba7vcha2smpkf2xmezm7f2eepa/error.png',
-  }[type];
+  const image = getImage(type)
   const shouldRetry =
-    type === ResponseType.ERROR || type === ResponseType.RECAST || type === ResponseType.ALREADY_MINTED;
+    type === ResponseType.ERROR || type === ResponseType.RECAST
+  const isSuccess =
+    type === ResponseType.SUCCESS || type === ResponseType.ALREADY_MINTED
+
   return new NextResponse(`<!DOCTYPE html><html><head>
     <meta property="fc:frame" content="vNext" />
-    <meta property="fc:frame:image" content="${IMAGE}" />
+    <meta property="fc:frame:image" content="${image}" />
     <meta property="fc:frame:image:aspect_ratio" content="1:1" />
-    <meta property="fc:frame:post_url" content="${SITE_URL}/api/frame" />
+    <meta property="fc:frame:post_url" content="${env.SITE_URL}/api/frame" />
     
     ${
-      shouldRetry
-        ? `<meta property="fc:frame:button:1" content="Try again" />
+      isSuccess
+        ? `<meta name="fc:frame:button:1" content="Share 🤟" />
+        <meta name="fc:frame:button:1:action" content="link" />
+        <meta name="fc:frame:button:1:target" content="${shareOnWarpCast()}" />
+        <meta name="fc:frame:button:2" content="Play 🎲" />
+        <meta name="fc:frame:button:1:action" content="link" />
+        <meta name="fc:frame:button:1:target" content="https://neged-hat.app" />
+        `
+        : shouldRetry
+          ? `<meta property="fc:frame:button:1" content="Try again" />
 				    <meta name="fc:frame:button:2" content="Follow Neged" />
         		<meta name="fc:frame:button:2:action" content="link" />
         		<meta name="fc:frame:button:2:target" content="https://warpcast.com/neged" />
 				`
-			: 
-      `
-        <meta name="fc:frame:button:1" content="Claim 100 Neged" />
+          : `
+        <meta name="fc:frame:button:1" content="Claim 1000 HATs" />
         <meta name="fc:frame:button:1:action" content="post" />
-        <meta name="fc:frame:button:1:target" content="${SITE_URL}/api/frame/mint/" />
+        <meta name="fc:frame:button:1:target" content="${env.SITE_URL}/api/frame/" />
       `
     }
-  </head></html>`);
+  </head></html>`)
 }
 
 async function validateFrameRequest(data: string | undefined) {
-  if (!NEYNAR_API_KEY) throw new Error('NEYNAR_API_KEY is not set');
-  if (!data) throw new Error('No data provided');
+  if (!data) throw new Error('No data provided')
 
   const options = {
     method: 'POST',
     headers: {
       accept: 'application/json',
-      api_key: NEYNAR_API_KEY,
+      api_key: env.NEYNAR_API_KEY,
       'content-type': 'application/json',
     },
     body: JSON.stringify({ message_bytes_in_hex: data }),
-  };
+  }
 
   return await fetch(
     'https://api.neynar.com/v2/farcaster/frame/validate',
-    options,
+    options
   )
     .then((response) => response.json())
-    .catch((err) => console.error(err));
+    .catch((err) => console.error(err))
 }
 
 async function userInfo(data: number | null) {
-  if (!NEYNAR_API_KEY) throw new Error('NEYNAR_API_KEY is not set');
-  if (!data) throw new Error('No data provided');
+  if (!data) throw new Error('No data provided')
 
   const options = {
     method: 'GET',
     headers: {
       accept: 'application/json',
-      api_key: NEYNAR_API_KEY,
+      api_key: env.NEYNAR_API_KEY,
     },
-  };
+  }
 
   return await fetch(
-    'https://api.neynar.com/v2/farcaster/user/bulk?fids=398355&viewer_fid='+ data,
-    options,
+    'https://api.neynar.com/v2/farcaster/user/bulk?fids=398355&viewer_fid=' +
+      data,
+    options
   )
     .then((response) => response.json())
-    .catch((err) => console.error(err));
+    .catch((err) => console.error(err))
 }
