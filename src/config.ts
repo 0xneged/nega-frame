@@ -9,12 +9,12 @@ const picFolderUrl = env.SITE_URL
 
 export const getImage = (imageType: ResponseType) => {
   return {
-    [ResponseType.SUCCESS]: picFolderUrl + '/claimed.jpg',
-    [ResponseType.ALREADY_MINTED]: picFolderUrl + '/claimed.jpg',
+    [ResponseType.SUCCESS]: picFolderUrl + '/claimed.png',
+    [ResponseType.ALREADY_MINTED]: picFolderUrl + '/claimed.png',
     [ResponseType.RECAST]: picFolderUrl + '/recast.jpg',
     [ResponseType.NO_ADDRESS]: picFolderUrl + '/no-address.png',
     [ResponseType.ERROR]: picFolderUrl + '/error.png',
-    [ResponseType.GENERAL]: picFolderUrl + '/general.jpg',
+    [ResponseType.GENERAL]: picFolderUrl + '/general.png',
   }[imageType]
 }
 

@@ -16,5 +16,5 @@ export async function addUser(address: string) {
 }
 
 export function shareOnWarpCast() {
-  return `https://warpcast.com/~/compose?text=I just claimed 1000 HATs from @neged!&embeds[]=${env.SITE_URL}`
+  return `https://warpcast.com/~/compose?text=I just claimed 100 HATs from @neged!&embeds[]=${env.SITE_URL}`
 }
