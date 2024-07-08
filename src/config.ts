@@ -26,5 +26,5 @@ const imageData: FrameImageMetadata = {
 export const FRAME_METADATA = getFrameMetadata({
   buttons: [{ label: 'Claim your HATs' }],
   image: imageData,
-  postUrl: `${env.SITE_URL}/api/frame`,
+  postUrl: `${env.SITE_URL}api/frame`,
 })
