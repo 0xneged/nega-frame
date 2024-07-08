@@ -5,6 +5,6 @@ export default cleanEnv(process.env, {
   NEYNAR_API_KEY: str(),
   SITE_URL: str({
     default: process.env.NEXT_PUBLIC_SITE_URL,
-    devDefault: 'http://localhost:3000/',
+    devDefault: 'http://localhost:3000',
   }),
 })
