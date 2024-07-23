@@ -84,7 +84,7 @@ function getResponse(type: ResponseType) {
         		<meta name="fc:frame:button:2:target" content="https://warpcast.com/neged" />
 				`
           : `
-        <meta name="fc:frame:button:1" content="Claim 100 HATs" />
+        <meta name="fc:frame:button:1" content="Claim 500 HATs" />
         <meta name="fc:frame:button:1:action" content="post" />
         <meta name="fc:frame:button:1:target" content="${env.SITE_URL}/api/frame/" />
       `
