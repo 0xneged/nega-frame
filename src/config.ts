@@ -11,7 +11,7 @@ export const getImage = (imageType: ResponseType) => {
   return {
     [ResponseType.SUCCESS]: picFolderUrl + '/claimed.png',
     [ResponseType.ALREADY_MINTED]: picFolderUrl + '/claimed.png',
-    [ResponseType.RECAST]: picFolderUrl + '/recast.jpg',
+    [ResponseType.RECAST]: picFolderUrl + '/recast.png',
     [ResponseType.NO_ADDRESS]: picFolderUrl + '/no-address.png',
     [ResponseType.ERROR]: picFolderUrl + '/error.png',
     [ResponseType.GENERAL]: picFolderUrl + '/general.png',
@@ -24,7 +24,7 @@ const imageData: FrameImageMetadata = {
 }
 
 export const FRAME_METADATA = getFrameMetadata({
-  buttons: [{ label: 'Claim your HATs' }],
+  buttons: [{ label: 'Receive Nothing' }],
   image: imageData,
   postUrl: `${env.SITE_URL}/api/frame`,
 })

@@ -1,61 +1,58 @@
-import { addUser, shareOnWarpCast } from '@/app/backend'
+import { setUserClaimed, getStep2, shareOnWarpCast } from '@/app/backend'
 import { getImage } from '@/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { Address } from 'viem'
 import ResponseType from '@/types/ResponseType'
 import env from '@/env'
-
-export const dynamic = 'force-dynamic'
-
-type RequestBody = { trustedData?: { messageBytes?: string } }
+import RequestBody from '@/types/RequestBody'
+import BackendResponse from '@/types/Backend'
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
     const body: RequestBody = await req.json()
-
     const status = await validateFrameRequest(body.trustedData?.messageBytes)
 
     if (!status?.valid) {
+      console.error('Error validating frame')
       console.error(status)
-      return getResponse(ResponseType.NO_ADDRESS)
+      return getResponse(ResponseType.ERROR)
     }
 
     const userFid = status?.action?.interactor?.fid
       ? JSON.stringify(status.action.interactor.fid)
       : null
 
+    if (!userFid) {
+      console.error('No user fid')
+      return getResponse(ResponseType.ERROR)
+    }
+
     const context = status?.action?.cast?.viewer_context
     const hasLikedAndRecasted = !!context?.liked && !!context?.recasted
 
     if (!hasLikedAndRecasted) return getResponse(ResponseType.RECAST)
 
-    const userFollow = await userInfo(Number(userFid))
-
-    if (!userFollow?.users) {
-      console.error('not follow')
-      return getResponse(ResponseType.ERROR)
-    } else {
-      const subs = userFollow?.users[0].viewer_context?.following
-      console.warn(userFid, 'already followed')
-      if (!subs) return getResponse(ResponseType.RECAST)
-    }
-
     const userAddress: Address | undefined =
-      status?.action?.interactor?.verifications?.[0]
+      status?.action?.interactor?.verifications?.[0] ||
+      status?.action?.interactor?.custody_address
 
     if (!userAddress) return getResponse(ResponseType.NO_ADDRESS)
+    const data = await getStep2(userAddress)
+    if (!data) return getResponse(ResponseType.ERROR)
 
-    const success = await addUser(userAddress)
+    const success = await setUserClaimed(userAddress)
     if (!success) return getResponse(ResponseType.ERROR)
 
-    return getResponse(ResponseType.SUCCESS)
+    return getResponse(ResponseType.SUCCESS, data)
   } catch (e) {
     console.error(e)
     return getResponse(ResponseType.ERROR)
   }
 }
 
-function getResponse(type: ResponseType) {
+// <meta name="fc:frame:button:3" content="usrs: ${success.totalUsers}" />
+
+function getResponse(type: ResponseType, success?: BackendResponse) {
   const image = getImage(type)
   const shouldRetry =
     type === ResponseType.ERROR || type === ResponseType.RECAST
@@ -69,22 +66,19 @@ function getResponse(type: ResponseType) {
     <meta property="fc:frame:post_url" content="${env.SITE_URL}/api/frame" />
     
     ${
-      isSuccess
-        ? `<meta name="fc:frame:button:1" content="Share 🤟" />
+      isSuccess && success
+        ? `<meta name="fc:frame:button:1" content="Claimed ${success.points} pts" />
         <meta name="fc:frame:button:1:action" content="link" />
-        <meta name="fc:frame:button:1:target" content="${shareOnWarpCast()}" />
-        <meta name="fc:frame:button:2" content="Play 🎲" />
-        <meta name="fc:frame:button:2:action" content="link" />
-        <meta name="fc:frame:button:2:target" content="https://neged-hat.app" />
+        <meta name="fc:frame:button:1:target" content="${shareOnWarpCast(success)}" />
         `
         : shouldRetry
           ? `<meta property="fc:frame:button:1" content="Try again" />
-				    <meta name="fc:frame:button:2" content="Follow Neged" />
-        		<meta name="fc:frame:button:2:action" content="link" />
-        		<meta name="fc:frame:button:2:target" content="https://warpcast.com/neged" />
+				    <meta name="fc:frame:button:2" content="Follow Nothing" />
+            <meta name="fc:frame:button:2:action" content="link" />
+        		<meta name="fc:frame:button:2:target" content=${env.SOCIAL_PAGE} />
 				`
           : `
-        <meta name="fc:frame:button:1" content="Claim 500 HATs" />
+        <meta name="fc:frame:button:1" content="Receive Nothing" />
         <meta name="fc:frame:button:1:action" content="post" />
         <meta name="fc:frame:button:1:target" content="${env.SITE_URL}/api/frame/" />
       `
@@ -125,7 +119,7 @@ async function userInfo(data: number | null) {
   }
 
   return await fetch(
-    'https://api.neynar.com/v2/farcaster/user/bulk?fids=398355&viewer_fid=' +
+    'https://api.neynar.com/v2/farcaster/user/bulk?fids=852338&viewer_fid=' +
       data,
     options
   )

@@ -1,5 +1,5 @@
-# negeD hat claim frame
+# nothing frame
 
-This frames allows to claim some HATs from the backend
+This frames allows to claim some nothing points from the backend
 
-I do not recommend to re-use this code, better try [frog.fm](https://frog.fm/) or [framejs.org](https://framesjs.org/)
+We should use [framejs.org](https://framesjs.org/) in the next project
