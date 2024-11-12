@@ -13,10 +13,7 @@ export default function Home() {
     >
       <Image src="/img/sadPaper.png" alt="sad-paper" width={75} height={75} />
       <span style={{ fontSize: '2rem', fontWeight: 800 }}>
-        Nothing. Just nothing
-      </span>
-      <span>
-        Get nothing - CA - <a>0xNothing</a>
+        negeD - reverse the hat
       </span>
       <span style={{ textTransform: 'uppercase', fontSize: '0.75rem' }}>
         Find us here:{' '}
@@ -29,7 +26,7 @@ export default function Home() {
             cursor: 'pointer',
           }}
         >
-          WarpCast
+          Warpcast
         </a>
       </span>
       <a

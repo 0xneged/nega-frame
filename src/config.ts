@@ -24,7 +24,7 @@ const imageData: FrameImageMetadata = {
 }
 
 export const FRAME_METADATA = getFrameMetadata({
-  buttons: [{ label: 'Receive Nothing' }],
+  buttons: [{ label: 'Check' }],
   image: imageData,
   postUrl: `${env.SITE_URL}/api/frame`,
 })

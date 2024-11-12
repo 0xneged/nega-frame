@@ -6,14 +6,14 @@ import Home from './components/Home'
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.SITE_URL),
-  title: 'Just Nothing',
+  title: 'negeD',
   icons: '/favicon.png',
-  applicationName: 'Just Nothing',
-  description: '?',
+  applicationName: 'negeD',
+  description: '🔄🎩',
   other: FRAME_METADATA,
   openGraph: {
     type: 'website',
-    title: 'Just Nothing',
+    title: 'negeD',
     images: [{ url: getImage(ResponseType.GENERAL) }],
   },
 }

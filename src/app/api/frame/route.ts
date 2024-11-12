@@ -1,11 +1,10 @@
-import { setUserClaimed, getStep2, shareOnWarpCast } from '@/app/backend'
+import { setUserClaimed, shareOnWarpCast } from '@/app/backend'
 import { getImage } from '@/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { Address } from 'viem'
 import ResponseType from '@/types/ResponseType'
 import env from '@/env'
 import RequestBody from '@/types/RequestBody'
-import BackendResponse from '@/types/Backend'
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
@@ -37,13 +36,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       status?.action?.interactor?.custody_address
 
     if (!userAddress) return getResponse(ResponseType.NO_ADDRESS)
-    const data = await getStep2(userAddress)
-    if (!data) return getResponse(ResponseType.ERROR)
 
     const success = await setUserClaimed(userAddress)
     if (!success) return getResponse(ResponseType.ERROR)
 
-    return getResponse(ResponseType.SUCCESS, data)
+    return getResponse(ResponseType.SUCCESS)
   } catch (e) {
     console.error(e)
     return getResponse(ResponseType.ERROR)
@@ -52,7 +49,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
 // <meta name="fc:frame:button:3" content="usrs: ${success.totalUsers}" />
 
-function getResponse(type: ResponseType, success?: BackendResponse) {
+function getResponse(type: ResponseType) {
   const image = getImage(type)
   const shouldRetry =
     type === ResponseType.ERROR || type === ResponseType.RECAST
@@ -66,19 +63,21 @@ function getResponse(type: ResponseType, success?: BackendResponse) {
     <meta property="fc:frame:post_url" content="${env.SITE_URL}/api/frame" />
     
     ${
-      isSuccess && success
-        ? `<meta name="fc:frame:button:1" content="Claimed ${success.points} pts" />
+      isSuccess
+        ? `<meta name="fc:frame:button:1" content="Share 🔄" />
         <meta name="fc:frame:button:1:action" content="link" />
-        <meta name="fc:frame:button:1:target" content="${shareOnWarpCast(success)}" />
+        <meta name="fc:frame:button:1:target" content="${shareOnWarpCast()}" />
+        <meta name="fc:frame:button:2:action" content="link" />
+        		<meta name="fc:frame:button:2:target" content=${env.SOCIAL_PAGE} />
+            
         `
         : shouldRetry
-          ? `<meta property="fc:frame:button:1" content="Try again" />
-				    <meta name="fc:frame:button:2" content="Follow Nothing" />
-            <meta name="fc:frame:button:2:action" content="link" />
-        		<meta name="fc:frame:button:2:target" content=${env.SOCIAL_PAGE} />
+          ? `
+          <meta name="fc:frame:button:1" content="Try again" />
+          <meta name="fc:frame:post_url" content="${env.SITE_URL}"
 				`
           : `
-        <meta name="fc:frame:button:1" content="Receive Nothing" />
+        <meta name="fc:frame:button:1" content="Check" />
         <meta name="fc:frame:button:1:action" content="post" />
         <meta name="fc:frame:button:1:target" content="${env.SITE_URL}/api/frame/" />
       `
@@ -101,26 +100,6 @@ async function validateFrameRequest(data: string | undefined) {
 
   return await fetch(
     'https://api.neynar.com/v2/farcaster/frame/validate',
-    options
-  )
-    .then((response) => response.json())
-    .catch((err) => console.error(err))
-}
-
-async function userInfo(data: number | null) {
-  if (!data) throw new Error('No data provided')
-
-  const options = {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      api_key: env.NEYNAR_API_KEY,
-    },
-  }
-
-  return await fetch(
-    'https://api.neynar.com/v2/farcaster/user/bulk?fids=852338&viewer_fid=' +
-      data,
     options
   )
     .then((response) => response.json())

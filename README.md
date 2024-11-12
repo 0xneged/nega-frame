@@ -1,4 +1,4 @@
-# nothing frame
+# nega frame
 
 This frames allows to claim some nothing points from the backend
 
