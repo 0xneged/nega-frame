@@ -6,7 +6,6 @@ const negaFrame = BACKEND_URL + '/nega-frame'
 
 export async function setUserClaimed(address: string) {
   try {
-    console.log(address)
     const { data } = await axios.post<{ success: boolean }>(negaFrame, {
       address,
     })
