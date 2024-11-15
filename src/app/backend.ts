@@ -18,6 +18,6 @@ export async function setUserClaimed(address: string) {
 
 export function shareOnWarpCast() {
   return encodeURI(
-    `https://warpcast.com/~/compose?text=Make NEged Great Again! [$NEGA]&embeds[]=${env.SITE_URL}`
+    `https://warpcast.com/~/compose?text=Make NEged Great Again! [$NEGA]&embeds[]=${env.SITE_URL}/`
   )
 }
